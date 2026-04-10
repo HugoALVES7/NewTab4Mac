@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvel Onglet</title>
+    <link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+    <main class="shell">
+        <section class="clock-section glass" aria-label="Horloge">
+            <p class="clock-label">Aujourd'hui</p>
+            <h1 id="time" class="clock-time">00:00</h1>
+            <p id="dateText" class="clock-date"></p>
+
+            <details class="clock-settings" id="clockSettings">
+                <summary>Personnaliser l'horloge</summary>
+                <div class="settings-grid">
+                    <label>
+                        Format
+                        <select id="clockFormat">
+                            <option value="24">24h</option>
+                            <option value="12">12h</option>
+                        </select>
+                    </label>
+                    <label>
+                        Police
+                        <select id="clockFont">
+                            <option value="default">Systeme</option>
+                            <option value="rounded">Arrondie</option>
+                            <option value="serif">Serif</option>
+                        </select>
+                    </label>
+                    <label>
+                        Couleur
+                        <input id="clockColor" type="color" value="#ffffff">
+                    </label>
+                    <label>
+                        Epaisseur
+                        <input id="clockWeight" type="range" min="300" max="800" step="100" value="500">
+                    </label>
+                    <label class="checkbox-row">
+                        <input id="showSeconds" type="checkbox">
+                        Afficher les secondes
+                    </label>
+                </div>
+            </details>
+        </section>
+
+        <section class="shortcuts-section glass" aria-label="Raccourcis">
+            <div class="section-topbar">
+                <h2>Raccourcis epingles</h2>
+                <div class="actions">
+                    <button id="addShortcutBtn" class="btn subtle" type="button">Ajouter</button>
+                    <button id="toggleEditBtn" class="btn subtle" type="button">Modifier</button>
+                    <button id="showAllBtn" class="btn" type="button">Tout afficher</button>
+                </div>
+            </div>
+
+            <div id="shortcutsRail" class="shortcuts-rail" aria-live="polite"></div>
+            <p class="hint">Maintien long sur une icone pour activer le mode edition.</p>
+        </section>
+    </main>
+
+    <dialog id="shortcutsModal" class="shortcuts-modal">
+        <div class="modal-header">
+            <h3>Tous les raccourcis</h3>
+            <button id="closeModalBtn" class="btn subtle" type="button">Fermer</button>
+        </div>
+        <div id="shortcutsGrid" class="shortcuts-grid"></div>
+    </dialog>
+
+    <script src="newtab.js"></script>
+</body>
+</html>
+
