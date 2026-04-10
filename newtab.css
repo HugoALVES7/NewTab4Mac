@@ -5,6 +5,13 @@
     --bg-2: #2b3354;
     --glass: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.22);
+    --spotlight-surface: rgba(14, 16, 24, 0.86);
+    --spotlight-surface-2: rgba(24, 27, 39, 0.76);
+    --spotlight-border: rgba(255, 255, 255, 0.16);
+    --spotlight-border-strong: rgba(255, 255, 255, 0.24);
+    --spotlight-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
+    --spotlight-text: #f8f9ff;
+    --spotlight-muted: rgba(242, 244, 255, 0.74);
 }
 
 * {
@@ -61,33 +68,36 @@ body {
 }
 
 .clock-time.font-rounded {
-    font-family: "SF Pro Rounded", "Avenir Next", "Arial Rounded MT Bold", sans-serif;
+    font-family: ui-rounded, "SF Pro Rounded", "SF Pro Display", "Avenir Next Rounded", "Arial Rounded MT Bold", -apple-system, sans-serif;
+    letter-spacing: -0.015em;
 }
 
 .clock-time.font-serif {
     font-family: "New York", "Times New Roman", Georgia, serif;
 }
 
+
 .clock-date {
     opacity: 0.84;
     margin-bottom: 16px;
 }
 
+
 .clock-settings {
     max-width: 700px;
     margin: 0 auto;
     text-align: left;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: max-height 220ms ease, opacity 220ms ease, transform 220ms ease;
 }
 
-.clock-settings summary {
-    cursor: pointer;
-    list-style: none;
-    font-weight: 600;
-    font-size: 14px;
-    display: inline-flex;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+.clock-settings.open {
+    max-height: 320px;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .settings-grid {
@@ -128,6 +138,7 @@ body {
 
 .shortcuts-section {
     padding: 20px;
+    position: relative;
 }
 
 .section-topbar {
@@ -149,80 +160,130 @@ body {
     gap: 8px;
 }
 
+.zoom-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.zoom-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.zoom-btn:hover {
+    background: transparent;
+    opacity: 0.8;
+}
+
+.shortcuts-rail .zoom-btn {
+    background: transparent;
+    color: #f8f9ff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
 .btn {
     border: none;
     border-radius: 999px;
     padding: 9px 14px;
-    background: rgba(255, 255, 255, 0.85);
-    color: #1e2041;
+    background: rgba(255, 255, 255, 0.86);
+    color: #171827;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
 }
 
 .btn.subtle {
-    background: rgba(255, 255, 255, 0.16);
-    color: #f5f6ff;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--spotlight-text);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .btn:hover {
     transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.94);
+}
+
+.btn.subtle:hover {
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .shortcuts-rail {
     display: flex;
-    gap: 14px;
+    gap: 20px;
     overflow-x: auto;
-    padding: 6px 4px 14px;
+    padding: 10px 8px 18px;
     scrollbar-width: thin;
 }
 
 .shortcut-item {
     position: relative;
-    flex: 0 0 108px;
+    flex: 0 0 120px;
+}
+
+.shortcuts-rail > .shortcut-item:last-child {
+    margin-left: auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
 }
 
 .shortcut-link,
 .shortcut-add {
     width: 100%;
-    min-height: 118px;
+    min-height: 132px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 10px;
+    border-radius: 14px;
+    border: none;
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.13);
+    background: transparent;
     color: #f8f9ff;
     cursor: pointer;
+    padding: 8px 6px;
 }
 
 .shortcut-link:hover,
 .shortcut-add:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .shortcut-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.86);
-    color: #1d2050;
+    width: 68px;
+    height: 68px;
+    border-radius: 16px;
+    background: transparent;
+    color: #f3f5ff;
     display: grid;
     place-items: center;
-    font-size: 20px;
+    font-size: 28px;
     font-weight: 700;
+    text-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
 }
 
 .shortcut-name {
-    max-width: 90px;
-    font-size: 12px;
+    max-width: 108px;
+    font-size: 13px;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+body.icons-monochrome .shortcut-icon.has-image {
+    filter: grayscale(1) saturate(0) contrast(1.05);
 }
 
 .delete-btn {
@@ -232,19 +293,55 @@ body {
     width: 24px;
     height: 24px;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    background: #ff4a5f;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.72);
+    color: #1d1f39;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 20px;
     display: none;
     cursor: pointer;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.delete-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.edit-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: #1d1f39;
+    font-size: 14px;
+    display: none;
+    cursor: pointer;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.edit-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
 }
 
 body.editing .delete-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+body.editing .edit-btn {
+    display: flex;
 }
 
 body.editing .shortcut-item {
@@ -266,24 +363,160 @@ body.editing .shortcut-link {
     opacity: 0.85;
 }
 
+.shortcuts-modal,
+.shortcut-editor-modal {
+    inset: 0;
+    margin: auto;
+    color: var(--spotlight-text);
+    border-radius: 26px;
+    border: 1px solid var(--spotlight-border);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 24%),
+        linear-gradient(180deg, var(--spotlight-surface), var(--spotlight-surface-2));
+    box-shadow: var(--spotlight-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    overflow: hidden;
+    color-scheme: dark;
+    display: none;
+}
+
+dialog[open] {
+    animation: spotlight-pop 160ms ease-out;
+}
+
+.shortcuts-modal[open],
+.shortcut-editor-modal[open] {
+    display: flex;
+}
+
 .shortcuts-modal {
-    width: min(780px, 92vw);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 24px;
-    background: rgba(20, 23, 40, 0.95);
-    color: #f8f9ff;
-    padding: 20px;
+    width: min(920px, 94vw);
+    max-height: 82vh;
+    padding: 18px;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.shortcuts-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shortcuts-search-wrap {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+#shortcutsSearchInput {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.32);
+    color: var(--spotlight-text);
+    padding: 13px 15px;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+#shortcutsSearchInput::placeholder {
+    color: rgba(238, 240, 255, 0.56);
+}
+
+#shortcutsSearchInput:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.28);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .shortcuts-modal::backdrop {
-    background: rgba(10, 10, 20, 0.5);
-    backdrop-filter: blur(6px);
+    background:
+        radial-gradient(circle at 50% 22%, rgba(53, 61, 90, 0.28), transparent 34%),
+        rgba(5, 7, 14, 0.72);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+.shortcut-editor-modal {
+    width: min(460px, 92vw);
+    max-height: 82vh;
+    padding: 18px;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.shortcut-editor-modal::backdrop {
+    background:
+        radial-gradient(circle at 50% 18%, rgba(53, 61, 90, 0.24), transparent 34%),
+        rgba(5, 7, 14, 0.72);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+.shortcut-editor-modal .modal-header {
+    margin-bottom: 0;
+}
+
+.shortcut-editor-modal .modal-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--spotlight-text);
+}
+
+.delete-modal-text {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--spotlight-muted);
+    margin: 2px 0 2px;
+}
+
+.shortcut-form {
+    display: grid;
+    gap: 12px;
+}
+
+.shortcut-editor-modal .shortcut-form {
+    gap: 12px;
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(242, 244, 255, 0.88);
+}
+
+.field input {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 13px;
+    background: rgba(0, 0, 0, 0.26);
+    color: var(--spotlight-text);
+    padding: 11px 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.field input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.24);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.shortcut-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-bottom: 14px;
 }
 
@@ -294,6 +527,75 @@ body.editing .shortcut-link {
     max-height: 65vh;
     overflow-y: auto;
 }
+
+.shortcuts-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 14px;
+    color: rgba(244, 246, 255, 0.72);
+    padding: 18px 8px;
+}
+
+.delete-modal {
+    width: min(420px, 92vw);
+}
+
+.shortcuts-modal .shortcuts-grid {
+    padding: 4px 2px 2px;
+}
+
+.shortcuts-grid .shortcut-item {
+    flex: initial;
+}
+
+.shortcuts-grid .shortcut-link {
+    min-height: 108px;
+    padding: 12px 10px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.shortcuts-grid .shortcut-link:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.shortcuts-grid .shortcut-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 15px;
+}
+
+.shortcuts-grid .shortcut-name {
+    max-width: 100%;
+    color: rgba(248, 249, 255, 0.96);
+}
+
+.delete-modal .shortcut-form-actions {
+    justify-content: flex-end;
+}
+
+.delete-modal .shortcut-form-actions .btn:first-child {
+    min-width: 92px;
+}
+
+.delete-modal .shortcut-form-actions .btn:last-child {
+    min-width: 102px;
+}
+
+@keyframes spotlight-pop {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 
 @keyframes wiggle {
     from {
@@ -317,6 +619,11 @@ body.editing .shortcut-link {
     .actions {
         width: 100%;
         flex-wrap: wrap;
+    }
+
+    .shortcuts-toolbar {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
 
