@@ -70,6 +70,9 @@ const dom = {
     pageBgSpheresEnabled: document.getElementById("pageBgSpheresEnabled"),
     pageBgSphere1Color: document.getElementById("pageBgSphere1Color"),
     pageBgSphere2Color: document.getElementById("pageBgSphere2Color"),
+    exportJsonBtn: document.getElementById("exportJsonBtn"),
+    importJsonInput: document.getElementById("importJsonInput"),
+    importExportStatus: document.getElementById("importExportStatus"),
     listsContainer: document.getElementById("listsContainer"),
     addListBtn: document.getElementById("addListBtn"),
     shortcutsGrid: document.getElementById("shortcutsGrid"),
@@ -90,6 +93,216 @@ const dom = {
     deleteCancelBtn: document.getElementById("deleteCancelBtn"),
     deleteConfirmBtn: document.getElementById("deleteConfirmBtn")
 };
+
+function setImportExportStatus(message) {
+    if (!dom.importExportStatus) {
+        return;
+    }
+    dom.importExportStatus.textContent = message;
+}
+
+function downloadJson(filename, dataObject) {
+    const json = JSON.stringify(dataObject, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+}
+
+function safeString(v, fallback = "") {
+    return typeof v === "string" ? v : fallback;
+}
+
+function normalizeUrlForKey(url) {
+    try {
+        const u = new URL(normalizeUrl(String(url || "")));
+        const path = u.pathname.replace(/\/+$/, "");
+        return `${u.host}${path}${u.search}`.toLowerCase();
+    } catch {
+        return String(url || "").trim().toLowerCase();
+    }
+}
+
+function sanitizeImportedPayload(raw) {
+    const payload = raw && typeof raw === "object" ? raw : {};
+    return {
+        schemaVersion: payload.schemaVersion,
+        lists: Array.isArray(payload.lists) ? payload.lists : [],
+        listEntryIds: payload.listEntryIds && typeof payload.listEntryIds === "object" ? payload.listEntryIds : {},
+        shortcutsById: payload.shortcutsById && typeof payload.shortcutsById === "object" ? payload.shortcutsById : {},
+        entriesById: payload.entriesById && typeof payload.entriesById === "object" ? payload.entriesById : {}
+    };
+}
+
+function exportAllToJson() {
+    const snapshot = {
+        schemaVersion: SCHEMA_VERSION,
+        exportedAt: new Date().toISOString(),
+        lists: state.lists,
+        listEntryIds: state.listEntryIds,
+        shortcutsById: state.shortcutsById,
+        entriesById: state.entriesById
+    };
+
+    const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    downloadJson(`newtab-export-${ts}.json`, snapshot);
+    setImportExportStatus("Export terminé.");
+}
+
+function importFromJsonSmart(rawObject) {
+    const incoming = sanitizeImportedPayload(rawObject);
+
+    // Index existant : urlKey -> shortcutId
+    const existingUrlKeyToId = new Map();
+    for (const sc of Object.values(state.shortcutsById)) {
+        const key = normalizeUrlForKey(sc.url);
+        if (key) {
+            existingUrlKeyToId.set(key, sc.id);
+        }
+    }
+
+    // importedShortcutId -> resolvedId (dans state)
+    const importedShortcutIdToResolvedId = new Map();
+
+    // 1) Fusion des raccourcis sans duplication
+    for (const importedSc of Object.values(incoming.shortcutsById)) {
+        if (!importedSc) {
+            continue;
+        }
+        const url = safeString(importedSc.url);
+        const urlKey = normalizeUrlForKey(url);
+        if (!urlKey) {
+            continue;
+        }
+
+        const existingId = existingUrlKeyToId.get(urlKey);
+        if (existingId) {
+            importedShortcutIdToResolvedId.set(String(importedSc.id || ""), existingId);
+            // Optionnel: enrichir l'existant si champ vide
+            const dst = state.shortcutsById[existingId];
+            if (dst) {
+                const incomingName = safeString(importedSc.name).slice(0, 30);
+                const incomingIconUrl = safeString(importedSc.customIconUrl);
+                if ((!dst.name || dst.name === "Raccourci") && incomingName) {
+                    dst.name = incomingName;
+                }
+                if (!dst.customIconUrl && incomingIconUrl) {
+                    dst.customIconUrl = incomingIconUrl;
+                }
+                dst.updatedAt = Date.now();
+            }
+            continue;
+        }
+
+        const name = safeString(importedSc.name, "Raccourci").slice(0, 30);
+        const customIconUrl = safeString(importedSc.customIconUrl, "");
+        const icon = safeString(importedSc.icon, name.charAt(0).toUpperCase() || "*").slice(0, 2);
+
+        const newId = createId("s");
+        state.shortcutsById[newId] = {
+            id: newId,
+            name,
+            url: normalizeUrl(url),
+            icon,
+            customIconUrl,
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+
+        existingUrlKeyToId.set(urlKey, newId);
+        importedShortcutIdToResolvedId.set(String(importedSc.id || ""), newId);
+    }
+
+    // 2) Fusion des listes par nom (case-insensitive)
+    const listNameToId = new Map();
+    for (const l of state.lists) {
+        const key = String(l?.name || "").trim().toLowerCase();
+        if (key) {
+            listNameToId.set(key, l.id);
+        }
+    }
+
+    const resolveListId = (importedList) => {
+        const importedName = String(importedList?.name || "Liste").trim().slice(0, 40);
+        const key = importedName.toLowerCase();
+
+        // pinned: ne pas recréer
+        if (importedList?.id === PINNED_LIST_ID || key === "tous les raccourcis") {
+            return PINNED_LIST_ID;
+        }
+
+        const existing = listNameToId.get(key);
+        if (existing) {
+            return existing;
+        }
+
+        const newListId = createId("l");
+        state.lists.push({ id: newListId, name: importedName, locked: false, createdAt: Date.now() });
+        state.listEntryIds[newListId] = state.listEntryIds[newListId] || [];
+        listNameToId.set(key, newListId);
+        return newListId;
+    };
+
+    // 3) Import des entrées dans les listes, sans dupliquer un raccourci déjà présent dans une liste
+    for (const importedList of incoming.lists) {
+        if (!importedList) {
+            continue;
+        }
+        const resolvedListId = resolveListId(importedList);
+        state.listEntryIds[resolvedListId] = state.listEntryIds[resolvedListId] || [];
+
+        const destEntryIds = state.listEntryIds[resolvedListId];
+        const destShortcutIdsSet = new Set(destEntryIds.map((eid) => state.entriesById[eid]?.shortcutId).filter(Boolean));
+
+        const importedEntryIds = incoming.listEntryIds?.[importedList.id] || [];
+        for (const importedEntryId of importedEntryIds) {
+            const importedEntry = incoming.entriesById?.[importedEntryId];
+            if (!importedEntry) {
+                continue;
+            }
+
+            const importedShortcutId = String(importedEntry.shortcutId || "");
+            const resolvedShortcutId = importedShortcutIdToResolvedId.get(importedShortcutId) || importedShortcutId;
+            if (!resolvedShortcutId || !state.shortcutsById[resolvedShortcutId]) {
+                continue;
+            }
+            if (destShortcutIdsSet.has(resolvedShortcutId)) {
+                continue;
+            }
+
+            const newEntryId = createId("e");
+            state.entriesById[newEntryId] = { id: newEntryId, shortcutId: resolvedShortcutId, addedAt: Date.now() };
+            destEntryIds.push(newEntryId);
+            destShortcutIdsSet.add(resolvedShortcutId);
+        }
+    }
+
+    // Bonus: si des raccourcis sont importés mais n'apparaissent dans aucune liste importée,
+    // on les ajoute dans "Tous les raccourcis" (pinned) sans duplication.
+    const pinnedEntryIds = state.listEntryIds[PINNED_LIST_ID] || [];
+    const pinnedShortcutIds = new Set(pinnedEntryIds.map((eid) => state.entriesById[eid]?.shortcutId).filter(Boolean));
+    for (const resolvedId of importedShortcutIdToResolvedId.values()) {
+        if (!resolvedId || pinnedShortcutIds.has(resolvedId)) {
+            continue;
+        }
+        const entryId = createId("e");
+        state.entriesById[entryId] = { id: entryId, shortcutId: resolvedId, addedAt: Date.now() };
+        pinnedEntryIds.push(entryId);
+        pinnedShortcutIds.add(resolvedId);
+    }
+    state.listEntryIds[PINNED_LIST_ID] = pinnedEntryIds;
+
+    ensureListInvariants();
+    renderShortcuts();
+    saveState();
+}
 
 function setSettingsPanelOpen(isOpen) {
     state.settingsPanelOpen = isOpen;
@@ -1050,6 +1263,8 @@ function closeDeleteDialog() {
 }
 
 function confirmDeleteShortcut() {
+    // Rester en mode édition après suppression
+    const wasEditing = state.editing;
     if (!state.deleteTargetEntryId) {
         closeDeleteDialog();
         return;
@@ -1064,6 +1279,10 @@ function confirmDeleteShortcut() {
         removeEntry(state.deleteTargetEntryId);
     }
     closeDeleteDialog();
+
+    if (wasEditing) {
+        setEditing(true);
+    }
 }
 
 function normalizeUrl(url) {
@@ -1084,9 +1303,7 @@ function normalizeImageUrl(url) {
 }
 
 function openShortcutDialog(mode, id = "") {
-    if (state.editing) {
-        setEditing(false);
-    }
+    // Ne pas quitter le mode édition quand on ouvre l'éditeur.
 
     state.editingEntryId = "";
 
@@ -1139,6 +1356,9 @@ function closeShortcutDialog() {
 function submitShortcutForm(event) {
     event.preventDefault();
 
+    // Rester (ou revenir) en mode édition après ajout/modification
+    const wasEditing = state.editing;
+
     const id = dom.shortcutId.value;
     const name = dom.shortcutName.value.trim();
     const rawUrl = dom.shortcutUrl.value.trim();
@@ -1184,6 +1404,10 @@ function submitShortcutForm(event) {
     closeShortcutDialog();
     renderShortcuts();
     saveState();
+
+    if (wasEditing) {
+        setEditing(true);
+    }
 }
 
 
@@ -1285,6 +1509,30 @@ function bindEvents() {
             state.clock.pageBgTintOpacity = Number(dom.pageBgTintOpacity.value);
             applyClockStyle();
             saveState();
+        });
+    }
+
+    if (dom.exportJsonBtn) {
+        dom.exportJsonBtn.addEventListener("click", () => exportAllToJson());
+    }
+
+    if (dom.importJsonInput) {
+        dom.importJsonInput.addEventListener("change", async () => {
+            const file = dom.importJsonInput.files?.[0];
+            // permettre de réimporter le même fichier
+            dom.importJsonInput.value = "";
+            if (!file) {
+                return;
+            }
+            try {
+                const text = await file.text();
+                const obj = JSON.parse(text);
+                importFromJsonSmart(obj);
+                setImportExportStatus("Import terminé (fusion intelligente).");
+            } catch (error) {
+                console.error(error);
+                setImportExportStatus("Erreur : JSON invalide.");
+            }
         });
     }
 
@@ -1443,6 +1691,10 @@ function bindEvents() {
     // Quitter le mode édition si clic en dehors des raccourcis
     document.addEventListener("pointerdown", (event) => {
         if (!state.editing) {
+            return;
+        }
+        // Si une modale est ouverte, ne pas quitter le mode édition
+        if (document.querySelector("dialog[open]")) {
             return;
         }
         // Si le clic est sur la section shortcuts, ne pas quitter

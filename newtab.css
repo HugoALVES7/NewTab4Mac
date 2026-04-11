@@ -207,6 +207,32 @@ body.settings-open .settings-panel {
     color: rgba(242, 244, 255, 0.72);
 }
 
+.settings-importexport {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.importexport-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.import-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.importexport-status {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(242, 244, 255, 0.72);
+}
+
 /* Teinte qui se superpose au fond, sans le remplacer */
 body.page-bg-tint::before {
     content: "";
@@ -601,7 +627,7 @@ body.editing #addListBtn {
     background: transparent;
     color: #f8f9ff;
     cursor: pointer;
-    padding: 4px 0px;
+    padding: 4px 0;
 }
 
 /* Hover Apple-like: on n'éclaire plus la carte, on "zoome" l'icône */

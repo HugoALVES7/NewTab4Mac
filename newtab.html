@@ -60,6 +60,21 @@
                     <input id="pageBgSphere2Color" type="color" value="#7057df">
                 </label>
             </div>
+
+            <div class="settings-importexport">
+                <h3 class="settings-section-title">Import / Export</h3>
+
+                <div class="importexport-actions">
+                    <button id="exportJsonBtn" class="btn subtle" type="button">Exporter (JSON)</button>
+
+                    <label class="btn subtle import-btn">
+                        Importer (JSON)
+                        <input id="importJsonInput" type="file" accept="application/json,.json" hidden>
+                    </label>
+                </div>
+
+                <p id="importExportStatus" class="importexport-status" aria-live="polite"></p>
+            </div>
         </div>
     </aside>
 
