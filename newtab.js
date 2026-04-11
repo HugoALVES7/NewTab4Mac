@@ -20,6 +20,7 @@ const DEFAULT_STATE = {
         showShortcutNames: true,
         // Teinte du fond: toujours active. La couleur par défaut colle au fond actuel.
         pageBgTintColor: "#151824",
+        pageBgTintOpacity: 0.22,
         pageBgSpheresEnabled: true,
         pageBgSphere1Color: "#3a4580",
         pageBgSphere2Color: "#7057df"
@@ -65,6 +66,7 @@ const dom = {
     shortcutIconsMonochrome: document.getElementById("shortcutIconsMonochrome"),
     showShortcutNames: document.getElementById("showShortcutNames"),
     pageBgTintColor: document.getElementById("pageBgTintColor"),
+    pageBgTintOpacity: document.getElementById("pageBgTintOpacity"),
     pageBgSpheresEnabled: document.getElementById("pageBgSpheresEnabled"),
     pageBgSphere1Color: document.getElementById("pageBgSphere1Color"),
     pageBgSphere2Color: document.getElementById("pageBgSphere2Color"),
@@ -315,6 +317,8 @@ function applyClockStyle() {
 
     // Overlay de couleur sur le fond (sans modifier le fond existant)
     document.documentElement.style.setProperty("--page-bg-tint", state.clock.pageBgTintColor || DEFAULT_STATE.clock.pageBgTintColor);
+    const opacity = typeof state.clock.pageBgTintOpacity === "number" ? state.clock.pageBgTintOpacity : DEFAULT_STATE.clock.pageBgTintOpacity;
+    document.documentElement.style.setProperty("--page-bg-tint-opacity", String(opacity));
     document.body.classList.add("page-bg-tint");
 
     // Sphères (radial gradients) : si désactivé, on met les couleurs à transparent.
@@ -363,6 +367,10 @@ function syncClockControls() {
         dom.pageBgTintColor.value = state.clock.pageBgTintColor || DEFAULT_STATE.clock.pageBgTintColor;
     }
 
+    if (dom.pageBgTintOpacity) {
+        dom.pageBgTintOpacity.value = String(typeof state.clock.pageBgTintOpacity === "number" ? state.clock.pageBgTintOpacity : DEFAULT_STATE.clock.pageBgTintOpacity);
+    }
+
     if (dom.pageBgSpheresEnabled) {
         dom.pageBgSpheresEnabled.checked = state.clock.pageBgSpheresEnabled !== false;
     }
@@ -373,6 +381,10 @@ function syncClockControls() {
         dom.pageBgSphere2Color.value = state.clock.pageBgSphere2Color || DEFAULT_STATE.clock.pageBgSphere2Color;
     }
     applyClockStyle();
+}
+
+function shouldOpenInNewTabFromModifier(event) {
+    return Boolean(event?.metaKey || event?.ctrlKey || event?.button === 1);
 }
 
 function setClockSettingsOpen(isOpen) {
@@ -419,8 +431,9 @@ function createEntryElement(entryId, listId) {
     const link = document.createElement("a");
     link.className = "shortcut-link";
     link.href = shortcut.url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
+    // Ouverture par défaut: même onglet. Cmd/Ctrl (ou clic molette) => nouvel onglet (comportement natif).
+    link.removeAttribute("target");
+    link.removeAttribute("rel");
 
     const iconSpan = document.createElement("span");
     iconSpan.className = "shortcut-icon";
@@ -437,7 +450,16 @@ function createEntryElement(entryId, listId) {
     link.addEventListener("click", (event) => {
         if (state.editing) {
             event.preventDefault();
+            return;
         }
+
+        if (shouldOpenInNewTabFromModifier(event)) {
+            // Laisser le navigateur gérer (nouvel onglet)
+            return;
+        }
+
+        event.preventDefault();
+        window.location.assign(link.href);
     });
 
     attachLongPress(wrapper);
@@ -764,8 +786,8 @@ function createShortcutSourceElement(shortcut) {
     const link = document.createElement("a");
     link.className = "shortcut-link";
     link.href = shortcut.url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
+    link.removeAttribute("target");
+    link.removeAttribute("rel");
 
     const iconSpan = document.createElement("span");
     iconSpan.className = "shortcut-icon";
@@ -778,9 +800,17 @@ function createShortcutSourceElement(shortcut) {
     link.appendChild(iconSpan);
     link.appendChild(nameSpan);
 
-    if (state.editing) {
-        link.addEventListener("click", (event) => event.preventDefault());
-    }
+    link.addEventListener("click", (event) => {
+        if (state.editing) {
+            event.preventDefault();
+            return;
+        }
+        if (shouldOpenInNewTabFromModifier(event)) {
+            return;
+        }
+        event.preventDefault();
+        window.location.assign(link.href);
+    });
 
     attachLongPress(wrapper);
     wrapper.appendChild(editBtn);
@@ -1245,6 +1275,14 @@ function bindEvents() {
     if (dom.pageBgTintColor) {
         dom.pageBgTintColor.addEventListener("input", () => {
             state.clock.pageBgTintColor = dom.pageBgTintColor.value;
+            applyClockStyle();
+            saveState();
+        });
+    }
+
+    if (dom.pageBgTintOpacity) {
+        dom.pageBgTintOpacity.addEventListener("input", () => {
+            state.clock.pageBgTintOpacity = Number(dom.pageBgTintOpacity.value);
             applyClockStyle();
             saveState();
         });

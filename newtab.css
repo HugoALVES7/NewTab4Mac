@@ -580,7 +580,7 @@ body.editing #addListBtn {
 
 .shortcut-item {
     position: relative;
-    flex: 0 0 120px;
+    flex: 0 0 110px;
 }
 
 /* Avant: on poussait le dernier item à droite pour la carte "Tout afficher".
@@ -589,7 +589,7 @@ body.editing #addListBtn {
 .shortcut-link,
 .shortcut-add {
     width: 100%;
-    min-height: 132px;
+    min-height: 110px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -601,7 +601,7 @@ body.editing #addListBtn {
     background: transparent;
     color: #f8f9ff;
     cursor: pointer;
-    padding: 8px 5px;
+    padding: 4px 0px;
 }
 
 /* Hover Apple-like: on n'éclaire plus la carte, on "zoome" l'icône */
@@ -964,13 +964,13 @@ dialog[open] {
     padding: 12px 10px;
     border: 1px solid transparent;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: transparent;
+    box-shadow: none;
 }
 
 /* Même comportement de hover dans la grille "Tout afficher": on zoome l'icône, pas le fond */
 .shortcuts-grid .shortcut-link:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: transparent;
     border-color: transparent;
 }
 
