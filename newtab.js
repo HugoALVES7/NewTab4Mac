@@ -17,7 +17,12 @@ const DEFAULT_STATE = {
         weight: 500,
         font: "default",
         iconsMonochrome: false,
-        showShortcutNames: true
+        showShortcutNames: true,
+        // Teinte du fond: toujours active. La couleur par défaut colle au fond actuel.
+        pageBgTintColor: "#151824",
+        pageBgSpheresEnabled: true,
+        pageBgSphere1Color: "#3a4580",
+        pageBgSphere2Color: "#7057df"
     },
     // Nouveau schéma: raccourcis (sources) + entrées (copies) + listes
     shortcutsById: {},
@@ -34,6 +39,7 @@ const state = {
     editing: false,
     dragging: null,
     clockSettingsOpen: false,
+    settingsPanelOpen: false,
     deleteTargetId: "",
     deleteTargetEntryId: "",
     deleteTargetShortcutId: "",
@@ -52,8 +58,16 @@ const dom = {
     clockColor: document.getElementById("clockColor"),
     clockWeight: document.getElementById("clockWeight"),
     clockFont: document.getElementById("clockFont"),
+    settingsToggleBtn: document.getElementById("settingsToggleBtn"),
+    settingsPanel: document.getElementById("settingsPanel"),
+    settingsOverlay: document.getElementById("settingsOverlay"),
+    settingsCloseBtn: document.getElementById("settingsCloseBtn"),
     shortcutIconsMonochrome: document.getElementById("shortcutIconsMonochrome"),
     showShortcutNames: document.getElementById("showShortcutNames"),
+    pageBgTintColor: document.getElementById("pageBgTintColor"),
+    pageBgSpheresEnabled: document.getElementById("pageBgSpheresEnabled"),
+    pageBgSphere1Color: document.getElementById("pageBgSphere1Color"),
+    pageBgSphere2Color: document.getElementById("pageBgSphere2Color"),
     listsContainer: document.getElementById("listsContainer"),
     addListBtn: document.getElementById("addListBtn"),
     shortcutsGrid: document.getElementById("shortcutsGrid"),
@@ -74,6 +88,32 @@ const dom = {
     deleteCancelBtn: document.getElementById("deleteCancelBtn"),
     deleteConfirmBtn: document.getElementById("deleteConfirmBtn")
 };
+
+function setSettingsPanelOpen(isOpen) {
+    state.settingsPanelOpen = isOpen;
+    document.body.classList.toggle("settings-open", isOpen);
+
+    if (dom.settingsPanel) {
+        dom.settingsPanel.hidden = !isOpen;
+    }
+    if (dom.settingsOverlay) {
+        dom.settingsOverlay.hidden = !isOpen;
+    }
+    if (dom.settingsToggleBtn) {
+        dom.settingsToggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    if (isOpen) {
+        // focus premier contrôle du panneau
+        setTimeout(() => {
+            const focusTarget = dom.settingsPanel?.querySelector("input, select, button");
+            focusTarget?.focus?.();
+        }, 0);
+    } else {
+        // retour focus sur le bouton rouage
+        dom.settingsToggleBtn?.focus?.();
+    }
+}
 
 dom.showAllBtn = document.createElement("button");
 dom.showAllBtn.id = "showAllBtn";
@@ -273,6 +313,17 @@ function applyClockStyle() {
     document.body.classList.toggle("icons-monochrome", Boolean(state.clock.iconsMonochrome));
     document.body.classList.toggle("hide-shortcut-names", state.clock.showShortcutNames === false);
 
+    // Overlay de couleur sur le fond (sans modifier le fond existant)
+    document.documentElement.style.setProperty("--page-bg-tint", state.clock.pageBgTintColor || DEFAULT_STATE.clock.pageBgTintColor);
+    document.body.classList.add("page-bg-tint");
+
+    // Sphères (radial gradients) : si désactivé, on met les couleurs à transparent.
+    const spheresEnabled = state.clock.pageBgSpheresEnabled !== false;
+    const sphere1 = state.clock.pageBgSphere1Color || DEFAULT_STATE.clock.pageBgSphere1Color;
+    const sphere2 = state.clock.pageBgSphere2Color || DEFAULT_STATE.clock.pageBgSphere2Color;
+    document.documentElement.style.setProperty("--page-bg-sphere-1", spheresEnabled ? sphere1 : "transparent");
+    document.documentElement.style.setProperty("--page-bg-sphere-2", spheresEnabled ? sphere2 : "transparent");
+
     dom.time.classList.remove("font-rounded", "font-serif");
     if (state.clock.font === "rounded") {
         dom.time.classList.add("font-rounded");
@@ -307,6 +358,19 @@ function syncClockControls() {
     dom.shortcutIconsMonochrome.checked = Boolean(state.clock.iconsMonochrome);
     if (dom.showShortcutNames) {
         dom.showShortcutNames.checked = state.clock.showShortcutNames !== false;
+    }
+    if (dom.pageBgTintColor) {
+        dom.pageBgTintColor.value = state.clock.pageBgTintColor || DEFAULT_STATE.clock.pageBgTintColor;
+    }
+
+    if (dom.pageBgSpheresEnabled) {
+        dom.pageBgSpheresEnabled.checked = state.clock.pageBgSpheresEnabled !== false;
+    }
+    if (dom.pageBgSphere1Color) {
+        dom.pageBgSphere1Color.value = state.clock.pageBgSphere1Color || DEFAULT_STATE.clock.pageBgSphere1Color;
+    }
+    if (dom.pageBgSphere2Color) {
+        dom.pageBgSphere2Color.value = state.clock.pageBgSphere2Color || DEFAULT_STATE.clock.pageBgSphere2Color;
     }
     applyClockStyle();
 }
@@ -1148,6 +1212,22 @@ function bindEvents() {
         saveState();
     });
 
+    if (dom.settingsToggleBtn) {
+        dom.settingsToggleBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setSettingsPanelOpen(!state.settingsPanelOpen);
+        });
+    }
+
+    if (dom.settingsCloseBtn) {
+        dom.settingsCloseBtn.addEventListener("click", () => setSettingsPanelOpen(false));
+    }
+
+    if (dom.settingsOverlay) {
+        dom.settingsOverlay.addEventListener("click", () => setSettingsPanelOpen(false));
+    }
+
     dom.shortcutIconsMonochrome.addEventListener("change", () => {
         state.clock.iconsMonochrome = dom.shortcutIconsMonochrome.checked;
         applyClockStyle();
@@ -1157,6 +1237,38 @@ function bindEvents() {
     if (dom.showShortcutNames) {
         dom.showShortcutNames.addEventListener("change", () => {
             state.clock.showShortcutNames = dom.showShortcutNames.checked;
+            applyClockStyle();
+            saveState();
+        });
+    }
+
+    if (dom.pageBgTintColor) {
+        dom.pageBgTintColor.addEventListener("input", () => {
+            state.clock.pageBgTintColor = dom.pageBgTintColor.value;
+            applyClockStyle();
+            saveState();
+        });
+    }
+
+    if (dom.pageBgSpheresEnabled) {
+        dom.pageBgSpheresEnabled.addEventListener("change", () => {
+            state.clock.pageBgSpheresEnabled = dom.pageBgSpheresEnabled.checked;
+            applyClockStyle();
+            saveState();
+        });
+    }
+
+    if (dom.pageBgSphere1Color) {
+        dom.pageBgSphere1Color.addEventListener("input", () => {
+            state.clock.pageBgSphere1Color = dom.pageBgSphere1Color.value;
+            applyClockStyle();
+            saveState();
+        });
+    }
+
+    if (dom.pageBgSphere2Color) {
+        dom.pageBgSphere2Color.addEventListener("input", () => {
+            state.clock.pageBgSphere2Color = dom.pageBgSphere2Color.value;
             applyClockStyle();
             saveState();
         });
@@ -1239,15 +1351,55 @@ function bindEvents() {
 
     attachClockLongPress();
 
+    document.addEventListener("keydown", (event) => {
+        if (event.key !== "Escape") {
+            return;
+        }
+
+        // Priorité: dialogs natifs
+        if (document.querySelector("dialog[open]")) {
+            return;
+        }
+
+        if (state.settingsPanelOpen) {
+            setSettingsPanelOpen(false);
+            return;
+        }
+
+        if (state.clockSettingsOpen) {
+            setClockSettingsOpen(false);
+        }
+    });
+
     document.addEventListener("pointerdown", (event) => {
         // Fermer horloge si clic en dehors
         if (!state.clockSettingsOpen) {
+            return;
+        }
+        if (document.querySelector("dialog[open]")) {
             return;
         }
         if (dom.clockSection.contains(event.target)) {
             return;
         }
         setClockSettingsOpen(false);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+        // Fermer panneau settings si clic en dehors
+        if (!state.settingsPanelOpen) {
+            return;
+        }
+        if (document.querySelector("dialog[open]")) {
+            return;
+        }
+        if (dom.settingsPanel?.contains(event.target)) {
+            return;
+        }
+        if (dom.settingsToggleBtn?.contains(event.target)) {
+            return;
+        }
+        setSettingsPanelOpen(false);
     });
 
     // Quitter le mode édition si clic en dehors des raccourcis

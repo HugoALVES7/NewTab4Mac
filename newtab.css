@@ -20,6 +20,14 @@
     --icon-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
     --icon-image-scale: 0.78;
     --icon-image-filter: none;
+
+    /* Overlay de teinte sur le fond global */
+    --page-bg-tint: #000000;
+    --page-bg-tint-opacity: 0.22;
+
+    /* Sphères (radial gradients) du fond */
+    --page-bg-sphere-1: #3a4580;
+    --page-bg-sphere-2: #7057df;
 }
 
 * {
@@ -33,10 +41,134 @@ body {
     min-height: 100vh;
     color: #f7f8ff;
     background:
-        radial-gradient(circle at 10% 20%, #3a4580 0%, transparent 30%),
-        radial-gradient(circle at 85% 15%, #7057df 0%, transparent 32%),
+        radial-gradient(circle at 10% 20%, var(--page-bg-sphere-1) 0%, transparent 30%),
+        radial-gradient(circle at 85% 15%, var(--page-bg-sphere-2) 0%, transparent 32%),
         linear-gradient(145deg, var(--bg-1), var(--bg-2));
     padding: 32px 18px;
+    position: relative;
+    isolation: isolate;
+}
+
+/* Bouton rouage (réglages) */
+.settings-gear {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.22);
+    color: rgba(248, 249, 255, 0.92);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.settings-gear svg {
+    width: 22px;
+    height: 22px;
+}
+
+.settings-gear:hover {
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.settings-gear:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+/* Overlay (clic dehors) */
+.settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 49;
+}
+
+/* Panneau latéral */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: min(360px, 92vw);
+    padding: 16px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 24%),
+        linear-gradient(180deg, var(--spotlight-surface), var(--spotlight-surface-2));
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 22px 0 70px rgba(0, 0, 0, 0.45);
+    z-index: 60;
+    transform: translateX(-102%);
+    transition: transform 200ms ease;
+    color: var(--spotlight-text);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.settings-open .settings-panel {
+    transform: translateX(0);
+}
+
+.settings-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 2px 12px;
+}
+
+.settings-panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.settings-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(248, 249, 255, 0.92);
+    cursor: pointer;
+}
+
+.settings-close:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.settings-close:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+.settings-panel-content .settings-grid {
+    margin-top: 0;
+}
+
+/* Teinte qui se superpose au fond, sans le remplacer */
+body.page-bg-tint::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: var(--page-bg-tint);
+    opacity: var(--page-bg-tint-opacity);
+    z-index: 0;
+}
+
+/* Assurer que le contenu reste au-dessus de l'overlay */
+.shell {
+    position: relative;
+    z-index: 1;
 }
 
 .shell {
@@ -389,7 +521,7 @@ body.editing #addListBtn {
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    padding: 10px 8px 18px;
+    padding: 10px 6px 18px;
     scrollbar-width: thin;
 }
 
@@ -416,7 +548,7 @@ body.editing #addListBtn {
     background: transparent;
     color: #f8f9ff;
     cursor: pointer;
-    padding: 8px 6px;
+    padding: 8px 5px;
 }
 
 /* Hover Apple-like: on n'éclaire plus la carte, on "zoome" l'icône */
