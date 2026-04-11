@@ -4,7 +4,6 @@ const CLOCK_LONG_PRESS_MS = 500;
 
 const SCHEMA_VERSION = 3;
 const PINNED_LIST_ID = "pinned";
-const DEFAULT_LIST_ID = "general";
 
 const DEFAULT_SHORTCUTS = [
     { id: "github", name: "GitHub - .Hugo", url: "https://github.com/HugoALVES7", icon: "G" }
@@ -17,7 +16,8 @@ const DEFAULT_STATE = {
         color: "#ffffff",
         weight: 500,
         font: "default",
-        iconsMonochrome: false
+        iconsMonochrome: false,
+        showShortcutNames: true
     },
     // Nouveau schéma: raccourcis (sources) + entrées (copies) + listes
     shortcutsById: {},
@@ -41,6 +41,9 @@ const state = {
     ...DEFAULT_STATE
 };
 
+// Style icônes (iOS-like) activé par défaut
+document.body.classList.add("ios-icons");
+
 const dom = {
     time: document.getElementById("time"),
     clockSection: document.querySelector(".clock-section"),
@@ -50,6 +53,7 @@ const dom = {
     clockWeight: document.getElementById("clockWeight"),
     clockFont: document.getElementById("clockFont"),
     shortcutIconsMonochrome: document.getElementById("shortcutIconsMonochrome"),
+    showShortcutNames: document.getElementById("showShortcutNames"),
     listsContainer: document.getElementById("listsContainer"),
     addListBtn: document.getElementById("addListBtn"),
     shortcutsGrid: document.getElementById("shortcutsGrid"),
@@ -127,8 +131,7 @@ function hydrateDefaults() {
     state.entriesById = {};
     state.lists = JSON.parse(JSON.stringify(DEFAULT_STATE.lists));
     state.listEntryIds = {
-        [PINNED_LIST_ID]: [],
-        [DEFAULT_LIST_ID]: []
+        [PINNED_LIST_ID]: []
     };
 
     // Mettre les DEFAULT_SHORTCUTS dans Épinglés pour coller à l'UI existante
@@ -268,6 +271,7 @@ function applyClockStyle() {
     document.documentElement.style.setProperty("--clock-color", state.clock.color);
     document.documentElement.style.setProperty("--clock-weight", String(state.clock.weight));
     document.body.classList.toggle("icons-monochrome", Boolean(state.clock.iconsMonochrome));
+    document.body.classList.toggle("hide-shortcut-names", state.clock.showShortcutNames === false);
 
     dom.time.classList.remove("font-rounded", "font-serif");
     if (state.clock.font === "rounded") {
@@ -301,6 +305,9 @@ function syncClockControls() {
     dom.clockWeight.value = String(state.clock.weight);
     dom.clockFont.value = state.clock.font;
     dom.shortcutIconsMonochrome.checked = Boolean(state.clock.iconsMonochrome);
+    if (dom.showShortcutNames) {
+        dom.showShortcutNames.checked = state.clock.showShortcutNames !== false;
+    }
     applyClockStyle();
 }
 
@@ -1146,6 +1153,14 @@ function bindEvents() {
         applyClockStyle();
         saveState();
     });
+
+    if (dom.showShortcutNames) {
+        dom.showShortcutNames.addEventListener("change", () => {
+            state.clock.showShortcutNames = dom.showShortcutNames.checked;
+            applyClockStyle();
+            saveState();
+        });
+    }
 
     dom.showAllBtn.addEventListener("click", () => {
         if (typeof dom.modal.showModal === "function") {

@@ -31,10 +31,14 @@
                         Epaisseur
                         <input id="clockWeight" type="range" min="300" max="800" step="100" value="500">
                     </label>
-                    <label class="checkbox-row">
-                        <input id="shortcutIconsMonochrome" type="checkbox">
-                        Noir et blanc
-                    </label>
+                     <label class="toggle-field">
+                         <span>Noir et blanc</span>
+                         <input id="shortcutIconsMonochrome" class="toggle" type="checkbox" role="switch">
+                     </label>
+                     <label class="toggle-field">
+                         <span>Afficher les noms</span>
+                         <input id="showShortcutNames" class="toggle" type="checkbox" role="switch" checked>
+                     </label>
                  </div>
             </div>
         </section>

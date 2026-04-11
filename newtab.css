@@ -12,6 +12,14 @@
     --spotlight-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
     --spotlight-text: #f8f9ff;
     --spotlight-muted: rgba(242, 244, 255, 0.74);
+
+    /* Icônes iOS-like */
+    --icon-squircle-radius: 18px;
+    --icon-bg: rgba(255, 255, 255, 0.16);
+    --icon-border: rgba(255, 255, 255, 0.22);
+    --icon-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    --icon-image-scale: 0.78;
+    --icon-image-filter: none;
 }
 
 * {
@@ -122,6 +130,56 @@ body {
     font-size: 13px;
 }
 
+/* Toggle (switch) pour les options de l'horloge */
+.toggle-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+}
+
+input.toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 44px;
+    height: 26px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    position: relative;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease;
+    align-self: flex-start;
+}
+
+input.toggle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    transform: translateY(-50%);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+    transition: transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+input.toggle:checked {
+    background: rgba(114, 197, 255, 0.55);
+    border-color: rgba(114, 197, 255, 0.75);
+}
+
+input.toggle:checked::after {
+    transform: translate(18px, -50%);
+}
+
+input.toggle:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
 .settings-grid select,
 .settings-grid input[type="range"],
 .settings-grid input[type="color"] {
@@ -145,7 +203,7 @@ body {
 }
 
 .shortcuts-section {
-    padding: 20px;
+    padding: 20px 16px;
     position: relative;
 }
 
@@ -361,9 +419,41 @@ body.editing #addListBtn {
     padding: 8px 6px;
 }
 
+/* Hover Apple-like: on n'éclaire plus la carte, on "zoome" l'icône */
 .shortcut-link:hover,
 .shortcut-add:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
+}
+
+.shortcut-icon {
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1);
+    will-change: transform;
+    transform-origin: center;
+}
+
+.shortcut-link:hover .shortcut-icon,
+.shortcut-link:focus-visible .shortcut-icon,
+.shortcut-add:hover .shortcut-icon,
+.shortcut-add:focus-visible .shortcut-icon {
+    transform: scale(1.1);
+}
+
+.shortcut-link:active .shortcut-icon,
+.shortcut-add:active .shortcut-icon {
+    transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shortcut-icon {
+        transition: none;
+    }
+}
+
+/* Petit bonus: micro-zoom du texte (subtil) */
+.shortcut-link:hover .shortcut-name,
+.shortcut-link:focus-visible .shortcut-name {
+    transform: translateY(0);
 }
 
 .shortcut-icon {
@@ -379,6 +469,24 @@ body.editing #addListBtn {
     text-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
 }
 
+/* Thème d'icônes homogène (type iPhone): fond + bord + squircle + favicon "réduit" */
+body.ios-icons .shortcut-icon {
+    border-radius: var(--icon-squircle-radius);
+    background: var(--icon-bg);
+    border: 1px solid var(--icon-border);
+    box-shadow: var(--icon-shadow);
+    overflow: hidden;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+body.ios-icons .shortcut-icon.has-image {
+    /* uniformiser visuellement les favicons */
+    background-size: calc(100% * var(--icon-image-scale)) calc(100% * var(--icon-image-scale));
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .shortcut-name {
     max-width: 108px;
     font-size: 13px;
@@ -389,8 +497,17 @@ body.editing #addListBtn {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
+/* Option: masquer/afficher les noms des raccourcis */
+body.hide-shortcut-names .shortcut-name {
+    display: none;
+}
+
+body.icons-monochrome {
+    --icon-image-filter: grayscale(1) saturate(0) brightness(1.15) contrast(1.08);
+}
+
 body.icons-monochrome .shortcut-icon.has-image {
-    filter: grayscale(1) saturate(0) contrast(1.05);
+    filter: var(--icon-image-filter);
 }
 
 .delete-btn {
@@ -666,9 +783,10 @@ dialog[open] {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
+/* Même comportement de hover dans la grille "Tout afficher": on zoome l'icône, pas le fond */
 .shortcuts-grid .shortcut-link:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    border-color: transparent;
 }
 
 .shortcuts-grid .shortcut-icon {
