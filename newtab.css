@@ -57,8 +57,8 @@ body {
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(0, 0, 0, 0.22);
+    border: none;
+    background: transparent;
     color: rgba(248, 249, 255, 0.92);
     display: grid;
     place-items: center;
@@ -66,6 +66,9 @@ body {
     z-index: 50;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 180ms ease;
 }
 
 .settings-gear svg {
@@ -73,9 +76,8 @@ body {
     height: 22px;
 }
 
-.settings-gear:hover {
-    background: rgba(0, 0, 0, 0.28);
-}
+.settings-gear:hover { transform: scale(1.14); }
+.settings-gear:active { transform: scale(1.08); }
 
 .settings-gear:focus-visible {
     outline: 2px solid rgba(255, 255, 255, 0.6);
@@ -139,10 +141,47 @@ body.settings-open .settings-panel {
     background: rgba(255, 255, 255, 0.08);
     color: rgba(248, 249, 255, 0.92);
     cursor: pointer;
+
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), background 180ms ease;
 }
 
 .settings-close:hover {
     background: rgba(255, 255, 255, 0.12);
+    transform: scale(1.08);
+}
+
+.settings-close:active {
+    transform: scale(1.04);
+}
+
+/* Hover "zoom" pour les boutons simples (cohérent avec les raccourcis) */
+.btn,
+.btn.subtle,
+.zoom-btn,
+.list-icon-btn,
+.delete-btn,
+.edit-btn {
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), background 180ms ease, opacity 180ms ease;
+}
+
+.btn:hover,
+.btn.subtle:hover,
+.zoom-btn:hover,
+.list-icon-btn:hover,
+.delete-btn:hover,
+.edit-btn:hover {
+    transform: scale(1.12);
+}
+
+.btn:active,
+.btn.subtle:active,
+.zoom-btn:active,
+.list-icon-btn:active,
+.delete-btn:active,
+.edit-btn:active {
+    transform: scale(1.06);
 }
 
 .settings-close:focus-visible {
@@ -152,6 +191,20 @@ body.settings-open .settings-panel {
 
 .settings-panel-content .settings-grid {
     margin-top: 0;
+}
+
+/* Indentation des champs sous les titres (uniquement dans la sidebar) */
+.settings-panel-content .settings-grid label {
+    padding-left: 18px;
+}
+
+.settings-section-title {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 255, 0.72);
 }
 
 /* Teinte qui se superpose au fond, sans le remplacer */
