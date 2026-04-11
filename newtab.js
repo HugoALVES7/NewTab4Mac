@@ -23,12 +23,10 @@ const DEFAULT_STATE = {
     shortcutsById: {},
     entriesById: {},
     lists: [
-        { id: PINNED_LIST_ID, name: "Épinglés", locked: true, createdAt: Date.now() },
-        { id: DEFAULT_LIST_ID, name: "Raccourcis", locked: false, createdAt: Date.now() }
+        { id: PINNED_LIST_ID, name: "Tous les raccourcis", locked: true, createdAt: Date.now() }
     ],
     listEntryIds: {
-        [PINNED_LIST_ID]: [],
-        [DEFAULT_LIST_ID]: []
+        [PINNED_LIST_ID]: []
     }
 };
 
@@ -113,8 +111,7 @@ async function loadState() {
         state.entriesById = raw.entriesById && typeof raw.entriesById === "object" ? raw.entriesById : {};
         state.lists = Array.isArray(raw.lists) && raw.lists.length ? raw.lists : DEFAULT_STATE.lists;
         state.listEntryIds = raw.listEntryIds && typeof raw.listEntryIds === "object" ? raw.listEntryIds : {
-            [PINNED_LIST_ID]: [],
-            [DEFAULT_LIST_ID]: []
+            [PINNED_LIST_ID]: []
         };
 
         ensureListInvariants();
@@ -210,13 +207,16 @@ function ensureListInvariants() {
 
     const hasPinned = state.lists.some((l) => l && l.id === PINNED_LIST_ID);
     if (!hasPinned) {
-        state.lists.unshift({ id: PINNED_LIST_ID, name: "Épinglés", locked: true, createdAt: Date.now() });
+        state.lists.unshift({ id: PINNED_LIST_ID, name: "Tous les raccourcis", locked: true, createdAt: Date.now() });
     }
 
-    const hasDefault = state.lists.some((l) => l && l.id === DEFAULT_LIST_ID);
-    if (!hasDefault) {
-        state.lists.push({ id: DEFAULT_LIST_ID, name: "Raccourcis", locked: false, createdAt: Date.now() });
+    // Forcer le nom de la liste globale (pinned)
+    const pinned = getListById(PINNED_LIST_ID);
+    if (pinned) {
+        pinned.name = "Tous les raccourcis";
+        pinned.locked = true;
     }
+
 
     if (!state.listEntryIds || typeof state.listEntryIds !== "object") {
         state.listEntryIds = {};

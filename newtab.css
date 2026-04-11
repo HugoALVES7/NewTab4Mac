@@ -47,8 +47,16 @@ body {
 }
 
 .clock-section {
-    padding: 26px;
+    padding: 12px 0 6px;
     text-align: center;
+}
+
+/* Sans carte "glass" derrière l'heure: on évite que les réglages semblent flottants */
+.clock-settings {
+    background: rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 22px;
+    padding: 12px;
 }
 
 .clock-label {
