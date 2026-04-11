@@ -854,6 +854,52 @@ function attachLongPress(element) {
     });
 }
 
+function enableGlobalEditLongPress() {
+    const host = dom.listsContainer;
+    if (!host) {
+        return;
+    }
+
+    let timer = null;
+    let pointerId = null;
+
+    const clear = () => {
+        if (timer) {
+            clearTimeout(timer);
+            timer = null;
+        }
+        pointerId = null;
+    };
+
+    host.addEventListener("pointerdown", (event) => {
+        if (state.editing) {
+            return;
+        }
+        // Ne pas déclencher si on interagit avec un contrôle
+        if (event.target.closest("button, a, input, textarea, select, dialog")) {
+            return;
+        }
+        // Ne pas déclencher quand on est en train de drag-scroll / drag&drop
+        if (event.target.closest(".shortcuts-rail")) {
+            // Sur le rail, on laisse plutôt le drag-scroll; long press sur les items géré ailleurs
+            return;
+        }
+
+        pointerId = event.pointerId;
+        timer = setTimeout(() => {
+            // Si un autre pointer a pris le relais, ignore
+            if (pointerId !== event.pointerId) {
+                return;
+            }
+            setEditing(true);
+        }, LONG_PRESS_MS);
+    });
+
+    ["pointerup", "pointerleave", "pointercancel"].forEach((name) => {
+        host.addEventListener(name, clear);
+    });
+}
+
 function setEditing(isEditing) {
     state.editing = isEditing;
     document.body.classList.toggle("editing", isEditing);
@@ -1285,6 +1331,7 @@ async function init() {
     renderShortcuts();
     updateClock();
     bindEvents();
+    enableGlobalEditLongPress();
     setInterval(updateClock, 1000);
 }
 
