@@ -147,11 +147,10 @@ body {
 }
 
 .shortcut-list {
-    padding: 14px 12px 6px;
-    border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.10);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
 }
 
 .shortcut-list-header {
@@ -161,6 +160,19 @@ body {
     gap: 10px;
     padding: 0 8px;
     margin-bottom: 6px;
+}
+
+/* Masquer visuellement le titre global tout en le gardant pour l'accessibilité */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 body.editing .shortcut-list-header[draggable="true"] {
@@ -227,8 +239,9 @@ body.editing #addListBtn {
 /* Par défaut il est masqué côté HTML via [hidden] (sécurité). */
 
 .shortcut-list.drag-over {
-    outline: 2px solid rgba(255, 255, 255, 0.28);
-    outline-offset: 2px;
+    outline: 2px dashed rgba(255, 255, 255, 0.22);
+    outline-offset: 6px;
+    border-radius: 18px;
 }
 
 .section-topbar {
