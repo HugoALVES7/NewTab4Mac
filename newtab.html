@@ -41,10 +41,13 @@
 
         <section class="shortcuts-section glass" aria-label="Raccourcis">
             <div class="section-topbar">
-                <h2>Épinglés</h2>
+                <h2>Raccourcis</h2>
+                <div class="actions">
+                    <button id="addListBtn" class="btn subtle" type="button" hidden>Ajouter une liste</button>
+                </div>
             </div>
 
-            <div id="shortcutsRail" class="shortcuts-rail" aria-live="polite"></div>
+            <div id="listsContainer" class="lists-container" aria-live="polite"></div>
         </section>
     </main>
 
@@ -59,7 +62,7 @@
     </dialog>
 
     <dialog id="shortcutEditorModal" class="shortcut-editor-modal">
-        <form id="shortcutForm" class="shortcut-form" method="dialog">
+        <form id="shortcutForm" class="shortcut-form">
             <div class="modal-header">
                 <h3 id="shortcutFormTitle">Ajouter un raccourci</h3>
             </div>
@@ -81,6 +84,7 @@
                 Image personnalisee (URL)
                 <input id="shortcutImageUrl" type="text" placeholder="Ex: https://site.com/icon.png">
             </label>
+
 
             <div class="shortcut-form-actions">
                 <button id="shortcutCancelBtn" class="btn subtle" type="button">Annuler</button>
