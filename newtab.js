@@ -17,6 +17,8 @@ const DEFAULT_STATE = {
         weight: 500,
         font: "default",
         iconsMonochrome: false,
+        iconsTintColor: "#72c5ff",
+        iconsTintStrength: 0,
         showShortcutNames: true,
         // Teinte du fond: toujours active. La couleur par défaut colle au fond actuel.
         pageBgTintColor: "#151824",
@@ -64,6 +66,8 @@ const dom = {
     settingsOverlay: document.getElementById("settingsOverlay"),
     settingsCloseBtn: document.getElementById("settingsCloseBtn"),
     shortcutIconsMonochrome: document.getElementById("shortcutIconsMonochrome"),
+    shortcutIconsTintColor: document.getElementById("shortcutIconsTintColor"),
+    shortcutIconsTintStrength: document.getElementById("shortcutIconsTintStrength"),
     showShortcutNames: document.getElementById("showShortcutNames"),
     pageBgTintColor: document.getElementById("pageBgTintColor"),
     pageBgTintOpacity: document.getElementById("pageBgTintOpacity"),
@@ -522,10 +526,86 @@ function getShortcutForEntry(entry) {
     return state.shortcutsById[entry.shortcutId] || null;
 }
 
+function ensureIconTintFilterElement() {
+    let svg = document.getElementById("iconTintSvgFilters");
+    if (svg) {
+        return;
+    }
+    svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.id = "iconTintSvgFilters";
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.style.position = "absolute";
+    svg.style.width = "0";
+    svg.style.height = "0";
+    svg.style.opacity = "0";
+    svg.style.pointerEvents = "none";
+
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+    filter.id = "iconTint";
+    filter.setAttribute("color-interpolation-filters", "sRGB");
+
+    const matrix = document.createElementNS("http://www.w3.org/2000/svg", "feColorMatrix");
+    matrix.id = "iconTintMatrix";
+    matrix.setAttribute("type", "matrix");
+    matrix.setAttribute("values", "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0");
+
+    filter.appendChild(matrix);
+    defs.appendChild(filter);
+    svg.appendChild(defs);
+    document.body.appendChild(svg);
+}
+
+function hexToRgb01(hex) {
+    const h = String(hex || "").trim();
+    const m = h.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (!m) {
+        return null;
+    }
+    let v = m[1];
+    if (v.length === 3) {
+        v = v.split("").map((c) => c + c).join("");
+    }
+    const r = parseInt(v.slice(0, 2), 16) / 255;
+    const g = parseInt(v.slice(2, 4), 16) / 255;
+    const b = parseInt(v.slice(4, 6), 16) / 255;
+    return { r, g, b };
+}
+
+function updateIconTintFilter() {
+    const strength = Math.max(0, Math.min(1, Number(state.clock.iconsTintStrength || 0)));
+    const rgb = hexToRgb01(state.clock.iconsTintColor || DEFAULT_STATE.clock.iconsTintColor) || { r: 0.45, g: 0.77, b: 1 };
+
+    ensureIconTintFilterElement();
+
+    const matrix = document.getElementById("iconTintMatrix");
+    if (!matrix) {
+        return;
+    }
+
+    // newRGB = (1-s)*oldRGB + s*tintRGB
+    const a = 1 - strength;
+    const r = rgb.r * strength;
+    const g = rgb.g * strength;
+    const b = rgb.b * strength;
+
+    const values = [
+        a, 0, 0, 0, r,
+        0, a, 0, 0, g,
+        0, 0, a, 0, b,
+        0, 0, 0, 1, 0
+    ].join(" ");
+    matrix.setAttribute("values", values);
+}
+
 function applyClockStyle() {
     document.documentElement.style.setProperty("--clock-color", state.clock.color);
     document.documentElement.style.setProperty("--clock-weight", String(state.clock.weight));
     document.body.classList.toggle("icons-monochrome", Boolean(state.clock.iconsMonochrome));
+    const tintStrength = typeof state.clock.iconsTintStrength === "number" ? state.clock.iconsTintStrength : 0;
+    document.body.classList.toggle("icons-tinted", tintStrength > 0.001);
+    updateIconTintFilter();
     document.body.classList.toggle("hide-shortcut-names", state.clock.showShortcutNames === false);
 
     // Overlay de couleur sur le fond (sans modifier le fond existant)
@@ -573,6 +653,12 @@ function syncClockControls() {
     dom.clockWeight.value = String(state.clock.weight);
     dom.clockFont.value = state.clock.font;
     dom.shortcutIconsMonochrome.checked = Boolean(state.clock.iconsMonochrome);
+    if (dom.shortcutIconsTintColor) {
+        dom.shortcutIconsTintColor.value = state.clock.iconsTintColor || DEFAULT_STATE.clock.iconsTintColor;
+    }
+    if (dom.shortcutIconsTintStrength) {
+        dom.shortcutIconsTintStrength.value = String(typeof state.clock.iconsTintStrength === "number" ? state.clock.iconsTintStrength : 0);
+    }
     if (dom.showShortcutNames) {
         dom.showShortcutNames.checked = state.clock.showShortcutNames !== false;
     }
@@ -1502,6 +1588,22 @@ function bindEvents() {
         applyClockStyle();
         saveState();
     });
+
+    if (dom.shortcutIconsTintColor) {
+        dom.shortcutIconsTintColor.addEventListener("input", () => {
+            state.clock.iconsTintColor = dom.shortcutIconsTintColor.value;
+            applyClockStyle();
+            saveState();
+        });
+    }
+
+    if (dom.shortcutIconsTintStrength) {
+        dom.shortcutIconsTintStrength.addEventListener("input", () => {
+            state.clock.iconsTintStrength = Number(dom.shortcutIconsTintStrength.value);
+            applyClockStyle();
+            saveState();
+        });
+    }
 
     if (dom.showShortcutNames) {
         dom.showShortcutNames.addEventListener("change", () => {

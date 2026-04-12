@@ -21,6 +21,10 @@
     --icon-image-scale: 0.78;
     --icon-image-filter: none;
 
+    /* Teinte des icônes (appliquée surtout aux favicons/images) */
+    --icon-tint-color: #72c5ff;
+    --icon-tint-strength: 0;
+
     /* Overlay de teinte sur le fond global */
     --page-bg-tint: #000000;
     --page-bg-tint-opacity: 0.22;
@@ -714,11 +718,18 @@ body.hide-shortcut-names .shortcut-name {
 }
 
 body.icons-monochrome {
-    --icon-image-filter: grayscale(1) saturate(0) brightness(1.15) contrast(1.08);
+    /* Plus clair en N&B pour rester lisible sur fond sombre */
+    --icon-image-filter: grayscale(1) saturate(0) brightness(1.35) contrast(1.05);
 }
 
 body.icons-monochrome .shortcut-icon.has-image {
     filter: var(--icon-image-filter);
+}
+
+/* Option: teinte des icônes (surtout utile sur les favicons). */
+/* Sur Firefox, color-mix dans les filters est peu fiable: on utilise un filtre SVG (feColorMatrix). */
+body.icons-tinted.ios-icons .shortcut-icon.has-image {
+    filter: var(--icon-image-filter) url(#iconTint);
 }
 
 .delete-btn {
