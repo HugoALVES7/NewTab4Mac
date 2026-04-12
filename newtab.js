@@ -917,11 +917,10 @@ function renderSingleList(list) {
     });
 
     const entryIds = state.listEntryIds[list.id] || [];
-    entryIds.forEach((entryId) => {
-        rail.appendChild(createEntryElement(entryId, list.id));
-    });
 
-    // Add + Show all (conserver le comportement existant) dans la liste Épinglés
+    // Dans "Tous les raccourcis" (pinned) :
+    // - carte "Ajouter" toujours au début
+    // - raccourcis triés alphabétiquement
     if (list.id === PINNED_LIST_ID) {
         const addCard = document.createElement("button");
         addCard.className = "shortcut-add";
@@ -934,7 +933,23 @@ function renderSingleList(list) {
         holder.appendChild(addCard);
         rail.appendChild(holder);
 
+        const sortedEntryIds = [...entryIds].sort((a, b) => {
+            const sa = getShortcutForEntry(state.entriesById[a]);
+            const sb = getShortcutForEntry(state.entriesById[b]);
+            const na = (sa?.name || "").toLocaleLowerCase("fr-FR");
+            const nb = (sb?.name || "").toLocaleLowerCase("fr-FR");
+            return na.localeCompare(nb, "fr-FR", { sensitivity: "base" });
+        });
+
+        sortedEntryIds.forEach((entryId) => {
+            rail.appendChild(createEntryElement(entryId, list.id));
+        });
+
         // Le bouton "Tout afficher" est dans le header de la liste.
+    } else {
+        entryIds.forEach((entryId) => {
+            rail.appendChild(createEntryElement(entryId, list.id));
+        });
     }
 
     listEl.appendChild(header);
