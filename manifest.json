@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "New Tab Extension",
-  "version": "1.0",
+  "name": "NewTab4Mac",
+  "version": "1.1.0",
   "description": "Extension pour personnaliser la page des nouveaux onglets",
   "permissions": [
     "tabs",
