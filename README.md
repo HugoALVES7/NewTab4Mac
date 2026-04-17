@@ -4,7 +4,7 @@ Cette extension remplace la page *Nouvel onglet* de Firefox par une interface av
 
 ## 1) Installation
 
-Installe l’extension depuis Mozilla Add-ons :
+Installe l’extension depuis Mozilla add-ons :
 
 https://addons.mozilla.org/fr/firefox/addon/newtab4mac/
 
