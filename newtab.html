@@ -7,8 +7,89 @@
     <link rel="stylesheet" href="newtab.css">
 </head>
 <body>
+    <button id="settingsToggleBtn" class="settings-gear" type="button" aria-label="Ouvrir les réglages" aria-controls="settingsPanel" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.1 7.1 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.24-1.12.55-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.39 1.05.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.24 1.12-.55 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z" fill="currentColor"/>
+        </svg>
+    </button>
+
+    <div id="settingsOverlay" class="settings-overlay" hidden></div>
+
+    <aside id="settingsPanel" class="settings-panel" hidden aria-label="Réglages">
+        <div class="settings-panel-header">
+            <h2 class="settings-panel-title">Réglages</h2>
+            <button id="settingsCloseBtn" class="settings-close" type="button" aria-label="Fermer les réglages">✕</button>
+        </div>
+
+        <div class="settings-panel-content">
+            <div class="settings-grid">
+                <h3 class="settings-section-title">Raccourcis</h3>
+                <label class="toggle-field">
+                    <span>Noir et blanc</span>
+                    <input id="shortcutIconsMonochrome" class="toggle" type="checkbox" role="switch">
+                </label>
+
+                <label>
+                    Teinte des icônes
+                    <input id="shortcutIconsTintColor" type="color" value="#72c5ff">
+                </label>
+
+                <label>
+                    Intensité teinte
+                    <input id="shortcutIconsTintStrength" type="range" min="0" max="1" step="0.01" value="0">
+                </label>
+
+                <label class="toggle-field">
+                    <span>Afficher les noms</span>
+                    <input id="showShortcutNames" class="toggle" type="checkbox" role="switch" checked>
+                </label>
+
+                <h3 class="settings-section-title">Arrière plan</h3>
+                <label>
+                    Couleur de la teinte
+                    <input id="pageBgTintColor" type="color" value="#151824">
+                </label>
+
+                <label>
+                    Opacité de la teinte
+                    <input id="pageBgTintOpacity" type="range" min="0" max="0.6" step="0.01" value="0.22">
+                </label>
+
+                <label class="toggle-field">
+                    <span>Sphères du fond</span>
+                    <input id="pageBgSpheresEnabled" class="toggle" type="checkbox" role="switch" checked>
+                </label>
+
+                <label>
+                    Couleur sphère 1
+                    <input id="pageBgSphere1Color" type="color" value="#3a4580">
+                </label>
+
+                <label>
+                    Couleur sphère 2
+                    <input id="pageBgSphere2Color" type="color" value="#7057df">
+                </label>
+            </div>
+
+            <div class="settings-importexport">
+                <h3 class="settings-section-title">Import / Export</h3>
+
+                <div class="importexport-actions">
+                    <button id="exportJsonBtn" class="btn subtle" type="button">Exporter (JSON)</button>
+
+                    <label class="btn subtle import-btn">
+                        Importer (JSON)
+                        <input id="importJsonInput" type="file" accept="application/json,.json" hidden>
+                    </label>
+                </div>
+
+                <p id="importExportStatus" class="importexport-status" aria-live="polite"></p>
+            </div>
+        </div>
+    </aside>
+
     <main class="shell">
-        <section class="clock-section glass" aria-label="Horloge">
+        <section class="clock-section" aria-label="Horloge">
             <p class="clock-label">Aujourd'hui</p>
             <h1 id="time" class="clock-time">00:00</h1>
             <p id="dateText" class="clock-date"></p>
@@ -31,20 +112,20 @@
                         Epaisseur
                         <input id="clockWeight" type="range" min="300" max="800" step="100" value="500">
                     </label>
-                    <label class="checkbox-row">
-                        <input id="shortcutIconsMonochrome" type="checkbox">
-                        Noir et blanc
-                    </label>
+                    <!-- Les réglages fond/raccourcis ont été déplacés dans le panneau latéral (rouage). -->
                  </div>
             </div>
         </section>
 
         <section class="shortcuts-section glass" aria-label="Raccourcis">
             <div class="section-topbar">
-                <h2>Épinglés</h2>
+                <h2 class="sr-only">Raccourcis</h2>
+                <div class="actions">
+                    <button id="addListBtn" class="btn subtle" type="button" hidden>Ajouter une liste</button>
+                </div>
             </div>
 
-            <div id="shortcutsRail" class="shortcuts-rail" aria-live="polite"></div>
+            <div id="listsContainer" class="lists-container" aria-live="polite"></div>
         </section>
     </main>
 
@@ -59,7 +140,7 @@
     </dialog>
 
     <dialog id="shortcutEditorModal" class="shortcut-editor-modal">
-        <form id="shortcutForm" class="shortcut-form" method="dialog">
+        <form id="shortcutForm" class="shortcut-form">
             <div class="modal-header">
                 <h3 id="shortcutFormTitle">Ajouter un raccourci</h3>
             </div>
@@ -81,6 +162,7 @@
                 Image personnalisee (URL)
                 <input id="shortcutImageUrl" type="text" placeholder="Ex: https://site.com/icon.png">
             </label>
+
 
             <div class="shortcut-form-actions">
                 <button id="shortcutCancelBtn" class="btn subtle" type="button">Annuler</button>

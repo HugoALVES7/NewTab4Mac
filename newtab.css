@@ -12,6 +12,26 @@
     --spotlight-shadow: 0 28px 90px rgba(0, 0, 0, 0.58);
     --spotlight-text: #f8f9ff;
     --spotlight-muted: rgba(242, 244, 255, 0.74);
+
+    /* Icônes iOS-like */
+    --icon-squircle-radius: 18px;
+    --icon-bg: rgba(255, 255, 255, 0.16);
+    --icon-border: rgba(255, 255, 255, 0.22);
+    --icon-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    --icon-image-scale: 0.78;
+    --icon-image-filter: none;
+
+    /* Teinte des icônes (appliquée surtout aux favicons/images) */
+    --icon-tint-color: #72c5ff;
+    --icon-tint-strength: 0;
+
+    /* Overlay de teinte sur le fond global */
+    --page-bg-tint: #000000;
+    --page-bg-tint-opacity: 0.22;
+
+    /* Sphères (radial gradients) du fond */
+    --page-bg-sphere-1: #3a4580;
+    --page-bg-sphere-2: #7057df;
 }
 
 * {
@@ -25,10 +45,213 @@ body {
     min-height: 100vh;
     color: #f7f8ff;
     background:
-        radial-gradient(circle at 10% 20%, #3a4580 0%, transparent 30%),
-        radial-gradient(circle at 85% 15%, #7057df 0%, transparent 32%),
+        radial-gradient(circle at 10% 20%, var(--page-bg-sphere-1) 0%, transparent 30%),
+        radial-gradient(circle at 85% 15%, var(--page-bg-sphere-2) 0%, transparent 32%),
         linear-gradient(145deg, var(--bg-1), var(--bg-2));
     padding: 32px 18px;
+    position: relative;
+    isolation: isolate;
+}
+
+/* Bouton rouage (réglages) */
+.settings-gear {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: none;
+    background: transparent;
+    color: rgba(248, 249, 255, 0.92);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 180ms ease;
+}
+
+.settings-gear svg {
+    width: 22px;
+    height: 22px;
+}
+
+.settings-gear:hover { transform: scale(1.14); }
+.settings-gear:active { transform: scale(1.08); }
+
+.settings-gear:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+/* Overlay (clic dehors) */
+.settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 49;
+}
+
+/* Panneau latéral */
+.settings-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: min(360px, 92vw);
+    padding: 16px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 24%),
+        linear-gradient(180deg, var(--spotlight-surface), var(--spotlight-surface-2));
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 22px 0 70px rgba(0, 0, 0, 0.45);
+    z-index: 60;
+    transform: translateX(-102%);
+    transition: transform 200ms ease;
+    color: var(--spotlight-text);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.settings-open .settings-panel {
+    transform: translateX(0);
+}
+
+.settings-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 2px 12px;
+}
+
+.settings-panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.settings-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(248, 249, 255, 0.92);
+    cursor: pointer;
+
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), background 180ms ease;
+}
+
+.settings-close:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: scale(1.08);
+}
+
+.settings-close:active {
+    transform: scale(1.04);
+}
+
+/* Hover "zoom" pour les boutons simples (cohérent avec les raccourcis) */
+.btn,
+.btn.subtle,
+.zoom-btn,
+.list-icon-btn,
+.delete-btn,
+.edit-btn {
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1), background 180ms ease, opacity 180ms ease;
+}
+
+.btn:hover,
+.btn.subtle:hover,
+.zoom-btn:hover,
+.list-icon-btn:hover,
+.delete-btn:hover,
+.edit-btn:hover {
+    transform: scale(1.12);
+}
+
+.btn:active,
+.btn.subtle:active,
+.zoom-btn:active,
+.list-icon-btn:active,
+.delete-btn:active,
+.edit-btn:active {
+    transform: scale(1.06);
+}
+
+.settings-close:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: 2px;
+}
+
+.settings-panel-content .settings-grid {
+    margin-top: 0;
+}
+
+/* Indentation des champs sous les titres (uniquement dans la sidebar) */
+.settings-panel-content .settings-grid label {
+    padding-left: 18px;
+}
+
+.settings-section-title {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 255, 0.72);
+}
+
+.settings-importexport {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.importexport-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.import-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.importexport-status {
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(242, 244, 255, 0.72);
+}
+
+/* Teinte qui se superpose au fond, sans le remplacer */
+body.page-bg-tint::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: var(--page-bg-tint);
+    opacity: var(--page-bg-tint-opacity);
+    z-index: 0;
+}
+
+/* Assurer que le contenu reste au-dessus de l'overlay */
+.shell {
+    position: relative;
+    z-index: 1;
 }
 
 .shell {
@@ -47,8 +270,16 @@ body {
 }
 
 .clock-section {
-    padding: 26px;
+    padding: 12px 0 6px;
     text-align: center;
+}
+
+/* Sans carte "glass" derrière l'heure: on évite que les réglages semblent flottants */
+.clock-settings {
+    background: rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 22px;
+    padding: 12px;
 }
 
 .clock-label {
@@ -114,6 +345,56 @@ body {
     font-size: 13px;
 }
 
+/* Toggle (switch) pour les options de l'horloge */
+.toggle-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+}
+
+input.toggle {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 44px;
+    height: 26px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    position: relative;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease;
+    align-self: flex-start;
+}
+
+input.toggle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    transform: translateY(-50%);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+    transition: transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+input.toggle:checked {
+    background: rgba(114, 197, 255, 0.55);
+    border-color: rgba(114, 197, 255, 0.75);
+}
+
+input.toggle:checked::after {
+    transform: translate(18px, -50%);
+}
+
+input.toggle:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
 .settings-grid select,
 .settings-grid input[type="range"],
 .settings-grid input[type="color"] {
@@ -137,8 +418,111 @@ body {
 }
 
 .shortcuts-section {
-    padding: 20px;
+    padding: 20px 16px;
     position: relative;
+}
+
+.lists-container {
+    display: grid;
+    gap: 18px;
+}
+
+.shortcut-list {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+.shortcut-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 8px;
+    margin-bottom: 6px;
+}
+
+/* Masquer visuellement le titre global tout en le gardant pour l'accessibilité */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+body.editing .shortcut-list-header[draggable="true"] {
+    cursor: grab;
+}
+
+.shortcut-list-header.drag-over {
+    outline: 2px solid rgba(255, 255, 255, 0.22);
+    outline-offset: 3px;
+    border-radius: 14px;
+}
+
+.shortcut-list-header.dragging {
+    opacity: 0.65;
+}
+
+.shortcut-list-title {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+.shortcut-list-title[contenteditable="true"] {
+    cursor: text;
+    border-radius: 10px;
+    padding: 6px 8px;
+}
+
+body.editing .shortcut-list-title[contenteditable="true"]:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.3);
+    outline-offset: 2px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.shortcut-list-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.list-icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(248, 249, 255, 0.92);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.list-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Bouton "Ajouter une liste" visible uniquement en mode édition */
+body.editing #addListBtn {
+    display: inline-flex;
+}
+
+/* Par défaut il est masqué côté HTML via [hidden] (sécurité). */
+
+.shortcut-list.drag-over {
+    outline: 2px dashed rgba(255, 255, 255, 0.22);
+    outline-offset: 6px;
+    border-radius: 18px;
 }
 
 .section-topbar {
@@ -220,26 +604,22 @@ body {
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    padding: 10px 8px 18px;
+    padding: 10px 6px 18px;
     scrollbar-width: thin;
 }
 
 .shortcut-item {
     position: relative;
-    flex: 0 0 120px;
+    flex: 0 0 110px;
 }
 
-.shortcuts-rail > .shortcut-item:last-child {
-    margin-left: auto;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-}
+/* Avant: on poussait le dernier item à droite pour la carte "Tout afficher".
+   Maintenant le bouton est dans le header des listes, donc on garde tous les items alignés à gauche. */
 
 .shortcut-link,
 .shortcut-add {
     width: 100%;
-    min-height: 132px;
+    min-height: 110px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -251,12 +631,44 @@ body {
     background: transparent;
     color: #f8f9ff;
     cursor: pointer;
-    padding: 8px 6px;
+    padding: 4px 0;
 }
 
+/* Hover Apple-like: on n'éclaire plus la carte, on "zoome" l'icône */
 .shortcut-link:hover,
 .shortcut-add:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
+}
+
+.shortcut-icon {
+    transform: translateZ(0);
+    transition: transform 240ms cubic-bezier(0.2, 0.9, 0.2, 1);
+    will-change: transform;
+    transform-origin: center;
+}
+
+.shortcut-link:hover .shortcut-icon,
+.shortcut-link:focus-visible .shortcut-icon,
+.shortcut-add:hover .shortcut-icon,
+.shortcut-add:focus-visible .shortcut-icon {
+    transform: scale(1.1);
+}
+
+.shortcut-link:active .shortcut-icon,
+.shortcut-add:active .shortcut-icon {
+    transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shortcut-icon {
+        transition: none;
+    }
+}
+
+/* Petit bonus: micro-zoom du texte (subtil) */
+.shortcut-link:hover .shortcut-name,
+.shortcut-link:focus-visible .shortcut-name {
+    transform: translateY(0);
 }
 
 .shortcut-icon {
@@ -272,6 +684,24 @@ body {
     text-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
 }
 
+/* Thème d'icônes homogène (type iPhone): fond + bord + squircle + favicon "réduit" */
+body.ios-icons .shortcut-icon {
+    border-radius: var(--icon-squircle-radius);
+    background: var(--icon-bg);
+    border: 1px solid var(--icon-border);
+    box-shadow: var(--icon-shadow);
+    overflow: hidden;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+body.ios-icons .shortcut-icon.has-image {
+    /* uniformiser visuellement les favicons */
+    background-size: calc(100% * var(--icon-image-scale)) calc(100% * var(--icon-image-scale));
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .shortcut-name {
     max-width: 108px;
     font-size: 13px;
@@ -282,8 +712,24 @@ body {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
+/* Option: masquer/afficher les noms des raccourcis */
+body.hide-shortcut-names .shortcut-name {
+    display: none;
+}
+
+body.icons-monochrome {
+    /* Plus clair en N&B pour rester lisible sur fond sombre */
+    --icon-image-filter: grayscale(1) saturate(0) brightness(1.35) contrast(1.05);
+}
+
 body.icons-monochrome .shortcut-icon.has-image {
-    filter: grayscale(1) saturate(0) contrast(1.05);
+    filter: var(--icon-image-filter);
+}
+
+/* Option: teinte des icônes (surtout utile sur les favicons). */
+/* Sur Firefox, color-mix dans les filters est peu fiable: on utilise un filtre SVG (feColorMatrix). */
+body.icons-tinted.ios-icons .shortcut-icon.has-image {
+    filter: var(--icon-image-filter) url(#iconTint);
 }
 
 .delete-btn {
@@ -499,6 +945,8 @@ dialog[open] {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+/* (select retiré du formulaire) */
+
 .field input:focus {
     outline: none;
     border-color: rgba(255, 255, 255, 0.24);
@@ -553,13 +1001,14 @@ dialog[open] {
     padding: 12px 10px;
     border: 1px solid transparent;
     border-radius: 16px;
-    background: rgba(255, 255, 255, 0.04);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    background: transparent;
+    box-shadow: none;
 }
 
+/* Même comportement de hover dans la grille "Tout afficher": on zoome l'icône, pas le fond */
 .shortcuts-grid .shortcut-link:hover {
-    background: rgba(255, 255, 255, 0.09);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: transparent;
+    border-color: transparent;
 }
 
 .shortcuts-grid .shortcut-icon {
